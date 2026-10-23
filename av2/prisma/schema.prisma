@@ -1,0 +1,128 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id           String    @id @default(uuid())
+  usuario      String    @unique
+  hashSenha    String
+  salt         String
+  papel        String    // ADMINISTRADOR, OPERADOR_CADASTRO, GESTOR_ALMOXARIFADO, AUDITOR
+  ativo        Boolean   @default(true)
+  ultimoAcesso DateTime  @default(now())
+  criadoEm     DateTime  @default(now())
+
+  @@map("usuarios")
+}
+
+model Organizacao {
+  id                String    @id @default(uuid())
+  razaoSocial       String
+  cnpj              String    @unique
+  inscricaoEstadual String
+  enderecoCompleto  String
+  telefone          String
+  email             String
+  ativo             Boolean   @default(true)
+  versao            Int       @default(1)
+  dataCadastro      DateTime  @default(now())
+
+  contrato          Contrato?
+  lotes             Lote[]
+
+  @@map("organizacoes")
+}
+
+model Contrato {
+  id                  String      @id @default(uuid())
+  organizacaoId       String      @unique
+  dataAssinatura      DateTime    @default(now())
+  dataVencimento      DateTime
+  clausulasJson       String      @default("[]")
+  valorMensal         Float
+  renovacaoAutomatica Boolean     @default(false)
+  versao              Int         @default(1)
+  criadoEm            DateTime    @default(now())
+
+  organizacao         Organizacao @relation(fields: [organizacaoId], references: [id], onDelete: Cascade)
+
+  @@map("contratos")
+}
+
+model Lote {
+  id                  String        @id @default(uuid())
+  dataEntrada         DateTime      @default(now())
+  organizacaoId       String
+  notaFiscal          String
+  transportadora      String
+  statusProcessamento String        @default("RECEBIDO") // RECEBIDO, EM_TRIAGEM, TRIAGEM_CONCLUIDA, ENCAMINHADO, FINALIZADO
+  observacoes         String?
+  versao              Int           @default(1)
+  criadoEm            DateTime      @default(now())
+
+  organizacao         Organizacao   @relation(fields: [organizacaoId], references: [id])
+  equipamentos        Equipamento[]
+
+  @@map("lotes")
+}
+
+model Equipamento {
+  id                  String         @id @default(uuid())
+  codigoBarrasInterno String         @unique
+  tipo                String         // COMPUTADOR_MESA, NOTEBOOK, MONITOR, IMPRESSORA, SERVIDOR, ROTEADOR, CABO_ESTRUTURADO, FONTE_ALIMENTACAO
+  marca               String
+  modelo              String
+  anoFabricacao       Int
+  estadoFisico        String         // NOVO, BOM_ESTADO, USADO_LEVE, USADO_MODERADO, DANIFICADO_LEVE, DANIFICADO_GRAVE, INSERVIVEL
+  pesoQuilogramas     Float
+  loteId              String
+  posicaoNoLote       Int            @default(1)
+  statusRastreamento  String         @default("AGUARDANDO_TRIAGEM") // AGUARDANDO_TRIAGEM, EM_TRIAGEM, AGUARDANDO_DESMONTE, EM_DESMONTE, PECAS_REAPROVEITADAS, MATERIAL_RECICLAVEL, DESCARTE_SEGURO, BAIXA_DEFINITIVA
+  justificativaEstado String?
+  versao              Int            @default(1)
+  criadoEm            DateTime       @default(now())
+
+  lote                Lote           @relation(fields: [loteId], references: [id], onDelete: Cascade)
+  movimentacoes       Movimentacao[]
+
+  @@map("equipamentos")
+}
+
+model Movimentacao {
+  id            String      @id @default(uuid())
+  equipamentoId String
+  dataHora      DateTime    @default(now())
+  origem        String
+  destino       String
+  responsavel   String
+  observacao    String?
+
+  equipamento   Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+
+  @@map("movimentacoes")
+}
+
+model JournalTransacao {
+  id                 String   @id @default(uuid())
+  timestamp          DateTime @default(now())
+  operacao           String
+  entidade           String
+  dadosAntes         String?  // JSON string
+  dadosDepois        String?  // JSON string
+  usuarioResponsavel String
+
+  @@map("journal_transacoes")
+}
+
+model ParametroGlobal {
+  id                          String @id @default("CONFIG_GLOBAL")
+  aliquotaImpostoPadrao       Float  @default(0.12)
+  coeficienteDepreciacaoAnual Float  @default(0.20)
+
+  @@map("parametros_globais")
+}

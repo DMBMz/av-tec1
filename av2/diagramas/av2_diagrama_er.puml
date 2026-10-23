@@ -1,0 +1,102 @@
+@startuml av2_diagrama_er
+title GreenCode - Modelo Entidade-Relacionamento Relacional (Prisma ORM / AV2)
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+entity "Usuario" as usuario {
+  * id : VARCHAR(36) [PK]
+  --
+  * usuario : VARCHAR(50) [UNIQUE]
+  * hashSenha : VARCHAR(255)
+  * salt : VARCHAR(64)
+  * papel : ENUM(PapelUsuario)
+  * ativo : BOOLEAN
+  * ultimoAcesso : TIMESTAMP
+  * criadoEm : TIMESTAMP
+}
+
+entity "Organizacao" as organizacao {
+  * id : VARCHAR(36) [PK]
+  --
+  * razaoSocial : VARCHAR(150)
+  * cnpj : VARCHAR(18) [UNIQUE]
+  * inscricaoEstadual : VARCHAR(30)
+  * enderecoCompleto : TEXT
+  * telefone : VARCHAR(20)
+  * email : VARCHAR(100)
+  * ativo : BOOLEAN
+  * versao : INT [DEFAULT 1]
+  * dataCadastro : TIMESTAMP
+}
+
+entity "Contrato" as contrato {
+  * id : VARCHAR(36) [PK]
+  --
+  * organizacaoId : VARCHAR(36) [FK, UNIQUE]
+  * dataAssinatura : TIMESTAMP
+  * dataVencimento : TIMESTAMP
+  * clausulasJson : TEXT
+  * valorMensal : DECIMAL(10,2)
+  * renovacaoAutomatica : BOOLEAN
+  * versao : INT [DEFAULT 1]
+  * criadoEm : TIMESTAMP
+}
+
+entity "Lote" as lote {
+  * id : VARCHAR(36) [PK]
+  --
+  * organizacaoId : VARCHAR(36) [FK]
+  * dataEntrada : TIMESTAMP
+  * notaFiscal : VARCHAR(50)
+  * transportadora : VARCHAR(100)
+  * statusProcessamento : ENUM(StatusLote)
+  * observacoes : TEXT
+  * versao : INT [DEFAULT 1]
+  * criadoEm : TIMESTAMP
+}
+
+entity "Equipamento" as equipamento {
+  * id : VARCHAR(36) [PK]
+  --
+  * loteId : VARCHAR(36) [FK]
+  * codigoBarrasInterno : VARCHAR(60) [UNIQUE]
+  * tipo : ENUM(TipoEquipamento)
+  * marca : VARCHAR(50)
+  * modelo : VARCHAR(50)
+  * anoFabricacao : INT
+  * estadoFisico : ENUM(EstadoFisico)
+  * pesoQuilogramas : DECIMAL(8,3)
+  * posicaoNoLote : INT
+  * statusRastreamento : ENUM(StatusRastreamento)
+  * justificativaEstado : TEXT
+  * versao : INT [DEFAULT 1]
+  * criadoEm : TIMESTAMP
+}
+
+entity "Movimentacao" as movimentacao {
+  * id : VARCHAR(36) [PK]
+  --
+  * equipamentoId : VARCHAR(36) [FK]
+  * dataHora : TIMESTAMP
+  * origem : VARCHAR(100)
+  * destino : VARCHAR(100)
+  * responsavel : VARCHAR(100)
+  * observacao : TEXT
+}
+
+entity "JournalTransacao" as journal {
+  * id : VARCHAR(36) [PK]
+  --
+  * timestamp : TIMESTAMP
+  * operacao : VARCHAR(30)
+  * entidade : VARCHAR(50)
+  * dadosAntes : TEXT
+  * dadosDepois : TEXT
+  * usuarioResponsavel : VARCHAR(50)
+}
+
+organizacao ||--o| contrato : "1 possui 0..1"
+organizacao ||--o{ lote : "1 gera N"
+lote ||--o{ equipamento : "1 contem N"
+equipamento ||--o{ movimentacao : "1 registra N"
+@enduml

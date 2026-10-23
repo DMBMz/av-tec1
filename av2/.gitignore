@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.log
+*.tmp*
+*.db
+*.db-journal
+dev.db*
+prisma/dev.db*
+.env
+!.env.example

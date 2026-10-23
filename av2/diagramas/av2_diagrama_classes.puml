@@ -1,0 +1,241 @@
+@startuml av2_diagrama_classes
+title GreenCode - Arquitetura Monolítica e Camadas (AV2)
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam packageStyle rectangle
+skinparam shadowing true
+
+package "Camada de Apresentação & Roteamento (Fastify HTTP API)" {
+  class Server {
+    + app: FastifyInstance
+    + iniciar(porta: number): Promise<void>
+    + registrarRotas(): void
+    + registrarPlugins(): void
+    + gracefulShutdown(): void
+  }
+
+  class AuthMiddleware {
+    + validarJWT(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + autorizarPapel(papeisPermitidos: PapelUsuario[]): Function
+  }
+
+  class AuthController {
+    - authService: AuthService
+    + login(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + me(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + registrarUsuario(req: FastifyRequest, reply: FastifyReply): Promise<void>
+  }
+
+  class OrganizacaoController {
+    - orgService: OrganizacaoService
+    + cadastrar(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + listar(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + obterPorId(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + renovarContrato(req: FastifyRequest, reply: FastifyReply): Promise<void>
+  }
+
+  class LoteController {
+    - loteService: LoteService
+    + criar(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + listar(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + obterPorId(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + concluirTriagem(req: FastifyRequest, reply: FastifyReply): Promise<void>
+  }
+
+  class EquipamentoController {
+    - equipService: EquipamentoService
+    + cadastrar(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + atualizarStatus(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + obterRastreabilidade(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + gerarCodigoBarras(req: FastifyRequest, reply: FastifyReply): Promise<void>
+  }
+
+  class RelatorioController {
+    - relatorioService: RelatorioService
+    + relatorioOrganizacao(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + relatorioStatus(req: FastifyRequest, reply: FastifyReply): Promise<void>
+    + relatorioFinanceiro(req: FastifyRequest, reply: FastifyReply): Promise<void>
+  }
+}
+
+package "Camada de Negócio & Aplicação (Services)" {
+  class AuthService {
+    - usuarioRepo: UsuarioRepository
+    + autenticar(usuario: string, senhaPlana: string): Promise<{ token: string, usuario: any }>
+    + criarUsuario(dados: any): Promise<any>
+  }
+
+  class OrganizacaoService {
+    - orgRepo: OrganizacaoRepository
+    + criarOrganizacao(dados: any): Promise<any>
+    + buscarPorId(id: string): Promise<any>
+    + listarAtivas(): Promise<any[]>
+    + renovarContrato(orgId: string, novoVencimento: Date): Promise<any>
+  }
+
+  class LoteService {
+    - loteRepo: LoteRepository
+    - prisma: PrismaClient
+    + criarLoteComEquipamentos(dadosLote: any, equipamentos: any[]): Promise<any>
+    + concluirTriagem(loteId: string): Promise<any>
+    + listarLotes(filtro: any): Promise<any[]>
+  }
+
+  class EquipamentoService {
+    - equipRepo: EquipamentoRepository
+    - loteRepo: LoteRepository
+    - prisma: PrismaClient
+    + atualizarStatusComMovimentacao(id: string, novoStatus: string, justificativa: string, mov: any, versaoEsperada: number): Promise<any>
+    + rastrearHistorico(id: string): Promise<any>
+    + gerarCodigoBarras(tipo: string, seq: number): string
+  }
+
+  class RelatorioService {
+    - prisma: PrismaClient
+    + emitirPorOrganizacao(orgId: string, inicio: Date, fim: Date): Promise<any>
+    + emitirPorStatus(): Promise<any>
+    + emitirFinanceiro(inicio: Date, fim: Date): Promise<any>
+  }
+}
+
+package "Camada de Persistência & ORM (Prisma & Repositories)" {
+  class PrismaService {
+    - client: PrismaClient
+    + $connect(): Promise<void>
+    + $disconnect(): Promise<void>
+    + $transaction(operacoes: any[]): Promise<any>
+  }
+
+  class UsuarioRepository {
+    - prisma: PrismaClient
+    + findByUsername(username: string): Promise<any>
+    + create(data: any): Promise<any>
+  }
+
+  class OrganizacaoRepository {
+    - prisma: PrismaClient
+    + findById(id: string): Promise<any>
+    + findByCnpj(cnpj: string): Promise<any>
+    + createWithContract(data: any): Promise<any>
+    + update(id: string, data: any): Promise<any>
+  }
+
+  class LoteRepository {
+    - prisma: PrismaClient
+    + findByIdWithEquipamentos(id: string): Promise<any>
+    + create(data: any): Promise<any>
+    + updateStatus(id: string, status: string, versaoEsperada: number): Promise<any>
+  }
+
+  class EquipamentoRepository {
+    - prisma: PrismaClient
+    + findById(id: string): Promise<any>
+    + findByCodigoBarras(codigo: string): Promise<any>
+    + updateStatusAndAddMovimentacao(id: string, data: any, versaoEsperada: number): Promise<any>
+  }
+}
+
+package "Modelos de Dados Prisma (schema.prisma)" {
+  class UsuarioModel <<Entity>> {
+    + id: String [PK]
+    + usuario: String [Unique]
+    + hashSenha: String
+    + papel: PapelUsuario
+    + ativo: Boolean
+    + criadoEm: DateTime
+  }
+
+  class OrganizacaoModel <<Entity>> {
+    + id: String [PK]
+    + razaoSocial: String
+    + cnpj: String [Unique]
+    + inscricaoEstadual: String
+    + enderecoCompleto: String
+    + telefone: String
+    + email: String
+    + ativo: Boolean
+    + versao: Int
+    + dataCadastro: DateTime
+  }
+
+  class ContratoModel <<Entity>> {
+    + id: String [PK]
+    + organizacaoId: String [FK, Unique]
+    + dataAssinatura: DateTime
+    + dataVencimento: DateTime
+    + clausulasJson: String
+    + valorMensal: Float
+    + renovacaoAutomatica: Boolean
+    + versao: Int
+  }
+
+  class LoteModel <<Entity>> {
+    + id: String [PK]
+    + dataEntrada: DateTime
+    + organizacaoId: String [FK]
+    + notaFiscal: String
+    + transportadora: String
+    + statusProcessamento: StatusLote
+    + observacoes: String
+    + versao: Int
+  }
+
+  class EquipamentoModel <<Entity>> {
+    + id: String [PK]
+    + codigoBarrasInterno: String [Unique]
+    + tipo: TipoEquipamento
+    + marca: String
+    + modelo: String
+    + anoFabricacao: Int
+    + estadoFisico: EstadoFisico
+    + pesoQuilogramas: Float
+    + loteId: String [FK]
+    + posicaoNoLote: Int
+    + statusRastreamento: StatusRastreamento
+    + versao: Int
+  }
+
+  class MovimentacaoModel <<Entity>> {
+    + id: String [PK]
+    + equipamentoId: String [FK]
+    + dataHora: DateTime
+    + origem: String
+    + destino: String
+    + responsavel: String
+    + observacao: String
+  }
+}
+
+' Relacionamentos entre Camadas
+Server --> AuthMiddleware
+Server --> AuthController
+Server --> OrganizacaoController
+Server --> LoteController
+Server --> EquipamentoController
+Server --> RelatorioController
+
+AuthController --> AuthService
+OrganizacaoController --> OrganizacaoService
+LoteController --> LoteService
+EquipamentoController --> EquipamentoService
+RelatorioController --> RelatorioService
+
+AuthService --> UsuarioRepository
+OrganizacaoService --> OrganizacaoRepository
+LoteService --> LoteRepository
+LoteService --> PrismaService
+EquipamentoService --> EquipamentoRepository
+EquipamentoService --> PrismaService
+RelatorioService --> PrismaService
+
+UsuarioRepository --> PrismaService
+OrganizacaoRepository --> PrismaService
+LoteRepository --> PrismaService
+EquipamentoRepository --> PrismaService
+
+' Relacionamentos Prisma
+OrganizacaoModel "1" -- "0..1" ContratoModel : possui
+OrganizacaoModel "1" -- "0..*" LoteModel : gera
+LoteModel "1" -- "0..*" EquipamentoModel : contem
+EquipamentoModel "1" -- "0..*" MovimentacaoModel : possui historico
+@enduml
