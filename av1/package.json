@@ -1,0 +1,27 @@
+{
+  "name": "greencode-cli",
+  "version": "1.0.0",
+  "description": "GreenCode - Sistema CLI Seguro para Logística Reversa de Eletrônicos (AV1)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "test:journey": "tsx scripts/test-journey.ts",
+    "test": "npm run test:journey"
+  },
+  "keywords": [
+    "greencode",
+    "logistica-reversa",
+    "cli",
+    "aes-256",
+    "journaling",
+    "typescript"
+  ],
+  "author": "Equipe GreenCode",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

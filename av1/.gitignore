@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+*.tmp*
+.history
+.greencode_history
+data_test/

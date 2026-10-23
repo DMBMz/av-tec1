@@ -1,0 +1,268 @@
+@startuml av1_diagrama_classes
+title GreenCode - Diagrama de Classes e Arquitetura CLI (AV1)
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam packageStyle rectangle
+skinparam shadowing true
+skinparam linetype ortho
+
+abstract class Validador {
+  + validar(objeto: any): boolean
+  + obterMensagemErro(): string
+}
+
+class ValidadorCNPJ extends Validador {
+  + validar(cnpj: string): boolean
+}
+
+class ValidadorDataEntrada extends Validador {
+  + validar(data: Date): boolean
+}
+
+interface Autenticavel {
+  + autenticar(usuario: string, senha: string): boolean
+  + renovarToken(): string
+}
+
+class Credencial {
+  - usuario: string
+  - hashSenha: string
+  - salt: string
+  - ultimoAcesso: Date
+  - papel: PapelUsuario
+  + verificarSenha(senhaPlana: string): boolean
+  + atualizarUltimoAcesso(): void
+}
+
+enum PapelUsuario {
+  ADMINISTRADOR
+  OPERADOR_CADASTRO
+  GESTOR_ALMOXARIFADO
+  AUDITOR
+}
+
+class Sessao {
+  - token: string
+  - usuario: string
+  - papel: PapelUsuario
+  - criacao: Date
+  - expiracao: Date
+  + isValida(): boolean
+  + renovar(): void
+}
+
+class Organizacao {
+  - id: string
+  - razaoSocial: string
+  - cnpj: string
+  - inscricaoEstadual: string
+  - enderecoCompleto: string
+  - telefone: string
+  - email: string
+  - dataCadastro: Date
+  - ativo: boolean
+  - contratoVigente: Contrato
+  + alterarEndereco(novoEndereco: string): void
+  + desativar(): void
+}
+
+class Contrato {
+  - id: string
+  - organizacaoId: string
+  - dataAssinatura: Date
+  - dataVencimento: Date
+  - clausulas: string[]
+  - valorMensal: number
+  - renovacaoAutomatica: boolean
+  + estaVigente(): boolean
+  + renovar(novoVencimento: Date): void
+}
+
+class Lote {
+  - id: string
+  - dataEntrada: Date
+  - organizacaoId: string
+  - notaFiscal: string
+  - transportadora: string
+  - equipamentos: Equipamento[]
+  - statusProcessamento: StatusLote
+  - observacoes: string
+  + adicionarEquipamento(equip: Equipamento): void
+  + removerEquipamento(equipId: string): boolean
+  + calcularPesoTotal(): number
+  + gerarRelatorioTriagem(): string
+}
+
+enum StatusLote {
+  RECEBIDO
+  EM_TRIAGEM
+  TRIAGEM_CONCLUIDA
+  ENCAMINHADO
+  FINALIZADO
+}
+
+class Equipamento {
+  - id: string
+  - codigoBarrasInterno: string
+  - tipo: TipoEquipamento
+  - marca: string
+  - modelo: string
+  - anoFabricacao: number
+  - estadoFisico: EstadoFisico
+  - pesoQuilogramas: number
+  - loteId: string
+  - posicaoNoLote: number
+  - statusRastreamento: StatusRastreamento
+  - historicoMovimentacao: Movimentacao[]
+  + atualizarStatus(novoStatus: StatusRastreamento, justificativa: string): void
+  + registrarMovimentacao(destino: string, responsavel: string): void
+  + calcularDepreciacao(): number
+}
+
+enum TipoEquipamento {
+  COMPUTADOR_MESA
+  NOTEBOOK
+  MONITOR
+  IMPRESSORA
+  SERVIDOR
+  ROTEADOR
+  CABO_ESTRUTURADO
+  FONTE_ALIMENTACAO
+}
+
+enum EstadoFisico {
+  NOVO
+  BOM_ESTADO
+  USADO_LEVE
+  USADO_MODERADO
+  DANIFICADO_LEVE
+  DANIFICADO_GRAVE
+  INSERVIVEL
+}
+
+enum StatusRastreamento {
+  AGUARDANDO_TRIAGEM
+  EM_TRIAGEM
+  AGUARDANDO_DESMONTE
+  EM_DESMONTE
+  PECAS_REAPROVEITADAS
+  MATERIAL_RECICLAVEL
+  DESCARTE_SEGURO
+  BAIXA_DEFINITIVA
+}
+
+class Movimentacao {
+  - id: string
+  - equipamentoId: string
+  - dataHora: Date
+  - origem: string
+  - destino: string
+  - responsavel: string
+  - observacao: string
+}
+
+class JournalTransacao {
+  - id: string
+  - timestamp: Date
+  - operacao: string
+  - entidade: string
+  - dadosAntes: any
+  - dadosDepois: any
+  - usuarioResponsavel: string
+  + registrar(): void
+  + reverter(): boolean
+}
+
+class CriptografiaArquivo {
+  + cifrar(dados: string, chave: string): string
+  + decifrar(dadosCifrados: string, chave: string): string
+  + gerarChave(): string
+}
+
+class RepositorioArquivo {
+  - diretorioBase: string
+  - criptografia: CriptografiaArquivo
+  + salvarEntidade(nomeArquivo: string, entidade: any): void
+  + carregarEntidade(nomeArquivo: string, id: string): any
+  + listarEntidades(nomeArquivo: string): any[]
+  + excluirEntidade(nomeArquivo: string, id: string): void
+}
+
+class ServicoAutenticacao {
+  - credenciais: Credencial[]
+  - sessoesAtivas: Sessao[]
+  + login(usuario: string, senha: string): Sessao
+  + logout(token: string): void
+  + validarToken(token: string): boolean
+  + alterarSenha(usuario: string, senhaAntiga: string, senhaNova: string): boolean
+}
+
+class ServicoOrganizacao {
+  - repositorio: RepositorioArquivo
+  - validadorCNPJ: ValidadorCNPJ
+  + cadastrarOrganizacao(dados: any): Organizacao
+  + buscarOrganizacao(id: string): Organizacao
+  + listarOrganizacoesAtivas(): Organizacao[]
+  + renovarContrato(organizacaoId: string, novoVencimento: Date): void
+}
+
+class ServicoLote {
+  - repositorio: RepositorioArquivo
+  + criarLote(dados: any): Lote
+  + adicionarEquipamentoLote(loteId: string, equipamento: Equipamento): void
+  + processarTriagem(loteId: string): void
+  + consultarLotePorPeriodo(dataInicio: Date, dataFim: Date): Lote[]
+}
+
+class ServicoEquipamento {
+  - repositorio: RepositorioArquivo
+  + rastrearEquipamento(id: string): any
+  + atualizarEstadoFisico(id: string, novoEstado: EstadoFisico): void
+  + gerarCodigoBarras(tipo: TipoEquipamento, sequencia: number): string
+}
+
+class ServicoRelatorio {
+  + gerarRelatorioPorOrganizacao(organizacaoId: string, periodo: any): string
+  + gerarRelatorioPorStatus(status: StatusRastreamento): string
+  + gerarRelatorioFinanceiro(periodo: any): string
+}
+
+class CLIInterface {
+  - autenticacao: ServicoAutenticacao
+  - organizacao: ServicoOrganizacao
+  - lote: ServicoLote
+  - equipamento: ServicoEquipamento
+  - relatorio: ServicoRelatorio
+  - sessaoAtual: Sessao
+  + iniciarLoop(): void
+  + processarComando(entrada: string): void
+  + exibirMenuPorPapel(papel: PapelUsuario): void
+}
+
+Sessao --> Credencial : referencia
+Sessao --> PapelUsuario : possui
+Organizacao "1" *-- "0..1" Contrato : possui
+Lote "1" o-- "1" Organizacao : pertence a
+Lote "1" *-- "0..*" Equipamento : contem
+Lote --> StatusLote : classificado como
+Equipamento --> TipoEquipamento : classificado como
+Equipamento --> EstadoFisico : apresenta
+Equipamento --> StatusRastreamento : possui
+Equipamento "1" *-- "0..*" Movimentacao : registra
+RepositorioArquivo --> CriptografiaArquivo : utiliza
+ServicoAutenticacao --> Credencial : gerencia
+ServicoAutenticacao --> Sessao : mantem
+ServicoOrganizacao --> RepositorioArquivo : utiliza
+ServicoOrganizacao --> ValidadorCNPJ : utiliza
+ServicoLote --> RepositorioArquivo : utiliza
+ServicoEquipamento --> RepositorioArquivo : utiliza
+ServicoRelatorio --> ServicoLote : consulta
+ServicoRelatorio --> ServicoEquipamento : consulta
+CLIInterface --> ServicoAutenticacao : delega
+CLIInterface --> ServicoOrganizacao : delega
+CLIInterface --> ServicoLote : delega
+CLIInterface --> ServicoEquipamento : delega
+CLIInterface --> ServicoRelatorio : delega
+
+JournalTransacao ..> RepositorioArquivo : registrado por
+@enduml
