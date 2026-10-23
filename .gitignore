@@ -1,0 +1,26 @@
+# Dependências
+node_modules/
+*/node_modules/
+
+# Builds / Compilação
+dist/
+*/dist/
+
+# Logs e arquivos temporários
+*.log
+*.tmp*
+.history
+.greencode_history
+data_test/
+
+# Banco de dados e ambiente local
+*.db
+*.db-journal
+dev.db*
+*/prisma/dev.db*
+.env
+!.env.example
+
+# Arquivos do Sistema Operacional
+.DS_Store
+Thumbs.db
