@@ -52,6 +52,7 @@ npm start
 ```
 
 * **Credenciais padrão do primeiro acesso:** Usuário `admin` | Senha `admin123`.
+* **Easter Egg:** Localizado no banner inicial da CLI (`iniciarLoop`) e via comando secreto `gerson` em [`av1/src/cli/CLIInterface.ts`](https://github.com/DMBMz/av-tec1/blob/av1/av1/src/cli/CLIInterface.ts). Mensagem: `"Oi prof. Gerson :)"`.
 * **Diagrama de Classes:** Disponível em [`av1/diagrama/`](https://github.com/DMBMz/av-tec1/tree/av1/av1/diagrama).
 * **Documentação de Segurança:** [`av1/docs/AV1_ARQUITETURA_SEGURANCA.md`](https://github.com/DMBMz/av-tec1/blob/av1/av1/docs/AV1_ARQUITETURA_SEGURANCA.md).
 
@@ -79,8 +80,22 @@ npm run dev
 * **API Base:** [http://localhost:3000](http://localhost:3000)
 * **Swagger UI Interativo:** [http://localhost:3000/docs](http://localhost:3000/docs)
 * **Health Check:** [http://localhost:3000/health](http://localhost:3000/health)
+* **Easter Egg:** Localizado no endpoint `GET /health` (campo `easterEgg`), na rota `GET /easteregg` e no banner do servidor em [`av2/src/server.ts`](https://github.com/DMBMz/av-tec1/blob/av2/av2/src/server.ts). Mensagem: `"Oi prof. Gerson :)"`.
 * **Diagramas Monólito e ER:** Disponíveis em [`av2/diagramas/`](https://github.com/DMBMz/av-tec1/tree/av2/av2/diagramas).
 * **Documentação Técnica:** [`av2/docs/AV2_ARQUITETURA_MONOLITO.md`](https://github.com/DMBMz/av-tec1/blob/av2/av2/docs/AV2_ARQUITETURA_MONOLITO.md).
+
+---
+
+## 🎁 Easter Eggs do Projeto
+
+Nas duas branches das avaliações foi inserido o easter egg `"Oi prof. Gerson :) "` conforme solicitado:
+
+* **Na AV1 (Branch `av1`)**:
+  - **Arquivo:** [`av1/src/cli/CLIInterface.ts`](https://github.com/DMBMz/av-tec1/blob/av1/av1/src/cli/CLIInterface.ts)
+  - **Onde encontrar:** Exibido no cabeçalho/banner inicial ao executar o CLI (`npm start` no método `iniciarLoop`) e também ao digitar o comando secreto `gerson` (ou `easteregg`) no prompt interativo.
+* **Na AV2 (Branch `av2`)**:
+  - **Arquivo:** [`av2/src/server.ts`](https://github.com/DMBMz/av-tec1/blob/av2/av2/src/server.ts)
+  - **Onde encontrar:** Retornado na resposta JSON do endpoint de integridade `GET /health` (campo `easterEgg`), na rota dedicada `GET /easteregg` e no banner do console ao iniciar o servidor HTTP (`npm run dev` no método `start`).
 
 ---
 
