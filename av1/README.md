@@ -48,3 +48,12 @@ npm start
 
 ## 3. Documentação Detalhada
 Consulte o arquivo [`docs/AV1_ARQUITETURA_SEGURANCA.md`](file:///c:/Users/Davi/Desktop/AV/av1-cli/docs/AV1_ARQUITETURA_SEGURANCA.md) para a justificativa das decisões arquiteturais e de segurança.
+
+---
+
+## 4. 🎁 Easter Egg
+- **Mensagem**: `"Oi prof. Gerson :)"`
+- **Onde encontrar**:
+  - **No banner inicial do CLI**: Exibido no cabeçalho ao rodar `npm start` (método `iniciarLoop` em [`src/cli/CLIInterface.ts`](src/cli/CLIInterface.ts)).
+  - **No comando interativo**: Digite o comando secreto `gerson` ou `easteregg` diretamente no terminal interativo para ver a saudação especial.
+

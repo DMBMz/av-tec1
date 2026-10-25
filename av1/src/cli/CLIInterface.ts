@@ -84,6 +84,7 @@ export class CLIInterface {
     console.log('================================================================');
     console.log('      GREENCODE CLI - SISTEMA DE LOGÍSTICA REVERSA v1.0.0      ');
     console.log('   Tecnologia: Node.js + TypeScript | Persistência Criptografada');
+    console.log('   Oi prof. Gerson :)                                           ');
     console.log('================================================================');
     console.log('[DICA] Pressione TAB para autocompletar comandos ou digite "ajuda".');
     console.log('Para iniciar, faça login com: login <usuario> <senha>\n');
@@ -133,6 +134,11 @@ export class CLIInterface {
     if (comandoPrincipal === 'sair') {
       console.log('\n[INFO] Finalizando GreenCode CLI. Até breve!');
       process.exit(0);
+    }
+
+    if (comandoPrincipal === 'gerson' || comandoPrincipal === 'easteregg') {
+      console.log('\n🌟 Oi prof. Gerson :) 🌟\n');
+      return;
     }
 
     if (comandoPrincipal === 'ajuda') {
