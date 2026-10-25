@@ -60,7 +60,15 @@ export function buildServer() {
       status: 'UP',
       versao: '1.0.0-monolith',
       banco: 'Conectado (Prisma ORM)',
+      easterEgg: 'Oi prof. Gerson :)',
       timestamp: new Date().toISOString()
+    };
+  });
+
+  // Rota Easter Egg
+  app.get('/easteregg', async () => {
+    return {
+      mensagem: 'Oi prof. Gerson :)'
     };
   });
 
@@ -107,6 +115,7 @@ async function start() {
     console.log(`📡 URL Principal: http://${ENV.HOST}:${ENV.PORT}`);
     console.log(`📑 Swagger UI Interativo: http://${ENV.HOST}:${ENV.PORT}/docs`);
     console.log(`❤️  Health Check: http://${ENV.HOST}:${ENV.PORT}/health`);
+    console.log(`👋 Easter Egg: Oi prof. Gerson :)`);
     console.log(`======================================================\n`);
   } catch (err) {
     app.log.error(err);

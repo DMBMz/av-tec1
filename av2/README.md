@@ -80,3 +80,13 @@ npm run prisma:seed
 
 ## 4. Documentação Técnica Completa
 Consulte o arquivo [`docs/AV2_ARQUITETURA_MONOLITO.md`](file:///c:/Users/Davi/Desktop/AV/av2-monolith/docs/AV2_ARQUITETURA_MONOLITO.md) para análise técnica dos trade-offs arquiteturais.
+
+---
+
+## 5. 🎁 Easter Egg
+- **Mensagem**: `"Oi prof. Gerson :)"`
+- **Onde encontrar**:
+  - **No endpoint de integridade**: `GET http://localhost:3000/health` (campo `easterEgg` no JSON de resposta).
+  - **Na rota dedicada**: `GET http://localhost:3000/easteregg` (retorna `{ "mensagem": "Oi prof. Gerson :)" }`).
+  - **No console ao inicializar o servidor**: Exibido no banner de inicialização do Fastify ao rodar `npm run dev` (arquivo [`src/server.ts`](src/server.ts)).
+
